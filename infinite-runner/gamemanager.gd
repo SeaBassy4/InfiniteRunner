@@ -1,5 +1,6 @@
 extends Node3D
 
+signal ScoreUpdated(score : int)
 var score : int = 0
 
 @export var ObstacleScene : Array[PackedScene] = []
@@ -26,8 +27,10 @@ func _on_spawn_timer_timeout() -> void:
 				obstacle.position = Vector3(lanePositions[i], 0, SpawnDistance)
 				$ObstacleContainer.add_child(obstacle)
 		currentOB.queue_free()
-	pass # Replace with function body.
+	pass 
 
 
 func _on_score_timer_timeout() -> void:
-	pass # Replace with function body.
+	score += 1
+	ScoreUpdated.emit(score)
+	pass 

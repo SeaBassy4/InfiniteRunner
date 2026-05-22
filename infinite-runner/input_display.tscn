@@ -1,0 +1,35 @@
+[gd_scene load_steps=7 format=3 uid="uid://br4apim4sj0i1"]
+
+[ext_resource type="Script" uid="uid://bl8pwhcqa2f2t" path="res://input_display.gd" id="1_jbjck"]
+[ext_resource type="Texture2D" uid="uid://lfixlxmw3xsl" path="res://sprites/none.png" id="2_1yigh"]
+[ext_resource type="Texture2D" uid="uid://ctg0gccv4vnps" path="res://sprites/up.png" id="3_bt2l6"]
+[ext_resource type="Texture2D" uid="uid://dflbh0q7uxu8p" path="res://sprites/down.png" id="4_65d3b"]
+[ext_resource type="Texture2D" uid="uid://clqwd12qt7akw" path="res://sprites/left.png" id="5_ytp7h"]
+[ext_resource type="Texture2D" uid="uid://bdk0eaeevpt4c" path="res://sprites/right.png" id="6_4n0qr"]
+
+[node name="InputDisplay" type="CanvasLayer"]
+script = ExtResource("1_jbjck")
+none_tex = ExtResource("2_1yigh")
+up_tex = ExtResource("3_bt2l6")
+down_tex = ExtResource("4_65d3b")
+left_tex = ExtResource("5_ytp7h")
+right_tex = ExtResource("6_4n0qr")
+
+[node name="MarginContainer" type="MarginContainer" parent="."]
+anchors_preset = 3
+anchor_left = 1.0
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = -40.0
+offset_top = -40.0
+grow_horizontal = 0
+grow_vertical = 0
+theme_override_constants/margin_right = 30
+theme_override_constants/margin_bottom = 30
+
+[node name="DPadDisplay" type="TextureRect" parent="MarginContainer"]
+custom_minimum_size = Vector2(160, 160)
+layout_mode = 2
+expand_mode = 1
+stretch_mode = 4

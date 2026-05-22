@@ -1,11 +1,9 @@
-[gd_scene load_steps=13 format=3 uid="uid://smu8wi0kyvps"]
+[gd_scene load_steps=11 format=3 uid="uid://smu8wi0kyvps"]
 
 [ext_resource type="Script" uid="uid://diov8cetkkx07" path="res://gamemanager.gd" id="1_glv2v"]
 [ext_resource type="PackedScene" uid="uid://but0vy8n63wmj" path="res://standard_obstacle.tscn" id="2_r0du0"]
 [ext_resource type="PackedScene" uid="uid://caw1qpc00yenm" path="res://lower_obstacle.tscn" id="2_uu6xs"]
 [ext_resource type="PackedScene" uid="uid://n1b4uuc47h6p" path="res://upper_obstacle.tscn" id="4_cm0pq"]
-[ext_resource type="PackedScene" uid="uid://br4apim4sj0i1" path="res://input_display.tscn" id="5_fos0i"]
-[ext_resource type="Script" uid="uid://d01tdd22huiee" path="res://ui_manager.gd" id="6_3dxm6"]
 
 [sub_resource type="ProceduralSkyMaterial" id="ProceduralSkyMaterial_rxg2q"]
 sky_horizon_color = Color(0.66224277, 0.6717428, 0.6867428, 1)
@@ -35,7 +33,7 @@ var currentState : State = State.RUNNING
 var targetLane : int = Lane.CENTER
 var currentLane : int = Lane.CENTER
 @export var LaneWidth = 2.0
-@export var SlidingDuration = 0.5
+@export var SlidingDuration = 0.4
 var currentSlidingDuration 
 
 
@@ -87,9 +85,6 @@ height = 0.8
 [node name="GameManager" type="Node3D"]
 script = ExtResource("1_glv2v")
 ObstacleScene = Array[PackedScene]([ExtResource("2_r0du0"), ExtResource("2_uu6xs"), ExtResource("4_cm0pq")])
-SpawnDistance = -30.0
-
-[node name="InputDisplay" parent="." instance=ExtResource("5_fos0i")]
 
 [node name="WorldEnvironment" type="WorldEnvironment" parent="."]
 environment = SubResource("Environment_uu6xs")
@@ -136,27 +131,6 @@ size = Vector3(10, 0.5, 200)
 autostart = true
 
 [node name="ScoreTimer" type="Timer" parent="."]
-autostart = true
 
-[node name="UI Manager" type="Control" parent="."]
-layout_mode = 3
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
-script = ExtResource("6_3dxm6")
-
-[node name="RichTextLabel" type="RichTextLabel" parent="UI Manager"]
-layout_mode = 1
-anchors_preset = 1
-anchor_left = 1.0
-anchor_right = 1.0
-offset_left = -254.0
-offset_bottom = 136.0
-grow_horizontal = 0
-text = "Score:"
-
-[connection signal="ScoreUpdated" from="." to="UI Manager" method="_on_game_manager_score_updated"]
 [connection signal="timeout" from="SpawnTimer" to="." method="_on_spawn_timer_timeout"]
 [connection signal="timeout" from="ScoreTimer" to="." method="_on_score_timer_timeout"]
