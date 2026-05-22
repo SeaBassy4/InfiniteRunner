@@ -13,7 +13,7 @@ func _on_spawn_timer_timeout() -> void:
 	var obstacleScene = ObstacleScene[randi() % ObstacleScene.size()]
 	var currentOB = obstacleScene.instantiate()
 	
-	if currentOB.CurrentObstacleType == Obstacle.ObstacleType.LOW: 
+	if currentOB.CurrentObstacleType == Obstacle.ObstacleType.LOW or currentOB.CurrentObstacleType == Obstacle.ObstacleType.HIGH: 
 		var obstacle = obstacleScene.instantiate()
 		obstacle.position = Vector3(0, 0, SpawnDistance)
 		$ObstacleContainer.add_child(obstacle)

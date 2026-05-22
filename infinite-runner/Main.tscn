@@ -1,8 +1,9 @@
-[gd_scene load_steps=9 format=3 uid="uid://smu8wi0kyvps"]
+[gd_scene load_steps=11 format=3 uid="uid://smu8wi0kyvps"]
 
 [ext_resource type="Script" uid="uid://diov8cetkkx07" path="res://gamemanager.gd" id="1_glv2v"]
 [ext_resource type="PackedScene" uid="uid://but0vy8n63wmj" path="res://standard_obstacle.tscn" id="2_r0du0"]
 [ext_resource type="PackedScene" uid="uid://caw1qpc00yenm" path="res://lower_obstacle.tscn" id="2_uu6xs"]
+[ext_resource type="PackedScene" uid="uid://n1b4uuc47h6p" path="res://upper_obstacle.tscn" id="4_cm0pq"]
 
 [sub_resource type="ProceduralSkyMaterial" id="ProceduralSkyMaterial_rxg2q"]
 sky_horizon_color = Color(0.66224277, 0.6717428, 0.6867428, 1)
@@ -27,10 +28,18 @@ script/source = "extends CharacterBody3D
 
 enum Lane {LEFT = -1, CENTER = 0, RIGHT = 1}
 enum State {RUNNING, JUMPING, SLIDING, DEAD}
+var currentState : State = State.RUNNING
 
 var targetLane : int = Lane.CENTER
 var currentLane : int = Lane.CENTER
 @export var LaneWidth = 2.0
+@export var SlidingDuration = 0.4
+var currentSlidingDuration 
+
+
+func _ready() -> void:
+	currentSlidingDuration = SlidingDuration
+
 
 func _physics_process(delta: float) -> void:
 	# Add the gravity.
@@ -48,15 +57,34 @@ func _physics_process(delta: float) -> void:
 		targetLane -= 1 
 	if Input.is_action_just_pressed(\"ui_right\") and targetLane < Lane.RIGHT: 
 		targetLane += 1
+	if Input.is_action_just_pressed(\"ui_down\") and is_on_floor() and currentState != State.SLIDING:
+		currentState = State.SLIDING
+		# 1. Turn OFF the standing box, turn ON the crouching box
+		$StandingCollision.set_deferred(\"disabled\", true)
+		$CrouchedCollision.set_deferred(\"disabled\", false)
+		
+		await get_tree().create_timer(SlidingDuration).timeout
+		
+		currentState = State.RUNNING
+		
+		# 2. Turn OFF the crouching box, turn ON the standing box
+		$CrouchedCollision.set_deferred(\"disabled\", true)
+		$StandingCollision.set_deferred(\"disabled\", false)
 	
 	move_and_slide()
 "
 
+[sub_resource type="CapsuleShape3D" id="CapsuleShape3D_cm0pq"]
+radius = 0.27075195
+height = 1.8
+
 [sub_resource type="CapsuleShape3D" id="CapsuleShape3D_rxg2q"]
+radius = 0.27075195
+height = 0.8
 
 [node name="GameManager" type="Node3D"]
 script = ExtResource("1_glv2v")
-ObstacleScene = Array[PackedScene]([ExtResource("2_r0du0"), ExtResource("2_uu6xs")])
+ObstacleScene = Array[PackedScene]([ExtResource("2_r0du0"), ExtResource("2_uu6xs"), ExtResource("4_cm0pq")])
 
 [node name="WorldEnvironment" type="WorldEnvironment" parent="."]
 environment = SubResource("Environment_uu6xs")
@@ -68,8 +96,12 @@ shadow_enabled = true
 [node name="Player" type="CharacterBody3D" parent="."]
 script = SubResource("GDScript_rxg2q")
 
-[node name="CollisionShape3D" type="CollisionShape3D" parent="Player"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.90651286, 0)
+[node name="StandingCollision" type="CollisionShape3D" parent="Player"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.9, 0)
+shape = SubResource("CapsuleShape3D_cm0pq")
+
+[node name="CrouchedCollision" type="CollisionShape3D" parent="Player"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.4, 0)
 shape = SubResource("CapsuleShape3D_rxg2q")
 
 [node name="Model" type="Node3D" parent="Player"]

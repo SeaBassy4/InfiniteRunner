@@ -1,0 +1,25 @@
+[gd_scene load_steps=5 format=3 uid="uid://n1b4uuc47h6p"]
+
+[ext_resource type="Script" uid="uid://d1ytfcyxpq003" path="res://obstacle.gd" id="1_pwaxl"]
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_uu6xs"]
+size = Vector3(5.9901733, 0.60050964, 1)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_r0du0"]
+albedo_color = Color(1, 0, 0, 1)
+
+[sub_resource type="BoxMesh" id="BoxMesh_cm0pq"]
+material = SubResource("StandardMaterial3D_r0du0")
+size = Vector3(6, 0.5, 1)
+
+[node name="UpperObstacle" type="StaticBody3D"]
+script = ExtResource("1_pwaxl")
+CurrentObstacleType = 2
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.010894775, 1.6917782, 0)
+shape = SubResource("BoxShape3D_uu6xs")
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1.1520001, 0, 0, 0, 1, -0.002794683, 1.678012, 0.005345106)
+mesh = SubResource("BoxMesh_cm0pq")
