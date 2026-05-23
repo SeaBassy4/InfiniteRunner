@@ -18,9 +18,12 @@ func _on_spawn_timer_timeout() -> void:
 	if randValue < PickupableSpawnChance:
 		var obstacleScene = PowerupsScene[randi() % PowerupsScene.size()]
 		var currentOB = obstacleScene.instantiate()
-		var spawnedLane = randi() % 3
-		currentOB.position = Vector3(lanePositions[spawnedLane], 0, SpawnDistance)
-		$ObstacleContainer.add_child(currentOB)
+		if currentOB.CurrentPickupType == Pickupable.PickupType.COIN:
+			spawnCoinFormation(obstacleScene)
+			currentOB.queue_free()
+		#var spawnedLane = randi() % 3
+		#currentOB.position = Vector3(lanePositions[spawnedLane], 0, SpawnDistance)
+		#$ObstacleContainer.add_child(currentOB)
 	else:
 		var obstacleScene = ObstacleScene[randi() % ObstacleScene.size()]
 		var currentOB = obstacleScene.instantiate()
@@ -51,3 +54,26 @@ func _on_player_add_score(score: int) -> void:
 	self.score += score
 	ScoreUpdated.emit(self.score)
 	pass 
+
+func spawnCoinFormation(coinScene : PackedScene): 
+	var lane = randi() % 3
+	var formationType = randi() % 3
+	match formationType:
+		0:
+			var coin = coinScene.instantiate()
+			coin.position = Vector3(lanePositions[lane], 0, SpawnDistance)
+			$ObstacleContainer.add_child(coin)
+		1:
+			for i in range(randi() % 7):
+				var coin = coinScene.instantiate()
+				coin.position = Vector3(lanePositions[lane], 0, SpawnDistance + (i *2))
+				$ObstacleContainer.add_child(coin)
+		2: 
+			var direction = 1 if randf() > 0.5 else -1
+			if lane < 0:
+				lane += 3
+			for i in range(3):
+				var index = (lane + (i * direction)) % 3
+				var coin = coinScene.instantiate()
+				coin.position = Vector3(lanePositions[index], 0, SpawnDistance + (i *2))
+				$ObstacleContainer.add_child(coin)

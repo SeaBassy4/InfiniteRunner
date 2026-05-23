@@ -1,8 +1,8 @@
 extends Area3D
-class_name Pickup
+class_name Pickupable
 
 enum PickupType {COIN, POWERUP, BOOST}
-
+@export var CurrentPickupType = PickupType.COIN
 @export var Speed : float = 10.0
 @export var Score = 1
 

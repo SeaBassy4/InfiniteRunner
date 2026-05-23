@@ -80,7 +80,7 @@ func _physics_process(delta: float) -> void:
 
 
 func _on_powerup_collider_area_entered(area: Area3D) -> void:
-	if area is Pickup:
+	if area is Pickupable:
 		AddScore.emit(area.Score)
 	pass
 "
@@ -97,9 +97,8 @@ height = 0.8
 
 [node name="GameManager" type="Node3D"]
 script = ExtResource("1_glv2v")
-ObstacleScene = Array[PackedScene]([ExtResource("2_r0du0"), ExtResource("2_uu6xs"), ExtResource("4_cm0pq")])
+ObstacleScene = Array[PackedScene]([ExtResource("2_uu6xs"), ExtResource("2_r0du0"), ExtResource("4_cm0pq")])
 PowerupsScene = Array[PackedScene]([ExtResource("5_lgr22")])
-SpawnDistance = -30.0
 
 [node name="InputDisplay" parent="." instance=ExtResource("5_fos0i")]
 
