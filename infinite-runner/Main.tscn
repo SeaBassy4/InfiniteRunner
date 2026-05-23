@@ -208,6 +208,7 @@ text = "LeaderBoard"
 horizontal_alignment = 1
 
 [node name="GameOverContainer" type="Control" parent="UI Manager"]
+visible = false
 layout_mode = 1
 anchors_preset = 8
 anchor_left = 0.5
@@ -256,7 +257,6 @@ layout_mode = 2
 text = "Play Again"
 
 [node name="StartGameContainer" type="Control" parent="UI Manager"]
-visible = false
 layout_mode = 1
 anchors_preset = 8
 anchor_left = 0.5
