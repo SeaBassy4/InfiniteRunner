@@ -1,4 +1,4 @@
-[gd_scene load_steps=15 format=3 uid="uid://smu8wi0kyvps"]
+[gd_scene load_steps=16 format=3 uid="uid://smu8wi0kyvps"]
 
 [ext_resource type="Script" uid="uid://diov8cetkkx07" path="res://gamemanager.gd" id="1_glv2v"]
 [ext_resource type="PackedScene" uid="uid://but0vy8n63wmj" path="res://standard_obstacle.tscn" id="2_r0du0"]
@@ -33,7 +33,7 @@ signal AddScore(score : int)
 
 enum Lane {LEFT = -1, CENTER = 0, RIGHT = 1}
 enum State {RUNNING, JUMPING, SLIDING, DEAD}
-var currentState : State = State.RUNNING
+var currentState : State = State.DEAD
 
 var targetLane : int = Lane.CENTER
 var currentLane : int = Lane.CENTER
@@ -42,47 +42,60 @@ var currentLane : int = Lane.CENTER
 var currentSlidingDuration 
 
 
+
 func _ready() -> void:
 	currentSlidingDuration = SlidingDuration
 
 
 func _physics_process(delta: float) -> void:
-	# Add the gravity.
-	if not is_on_floor():
-		velocity += get_gravity() * delta
+	if currentState != State.DEAD:
+		# Add the gravity.
+		if not is_on_floor():
+			velocity += get_gravity() * delta
 
-	# Handle jump.
-	if Input.is_action_just_pressed(\"ui_accept\") and is_on_floor():
-		velocity.y = JumpVelocity
-	
-	var targetX = targetLane * LaneWidth
-	position.x = lerp(position.x, targetX, LaneChangeSpeed * delta)
-	
-	if Input.is_action_just_pressed(\"ui_left\") and targetLane > Lane.LEFT:
-		targetLane -= 1 
-	if Input.is_action_just_pressed(\"ui_right\") and targetLane < Lane.RIGHT: 
-		targetLane += 1
-	if Input.is_action_just_pressed(\"ui_down\") and is_on_floor() and currentState != State.SLIDING:
-		currentState = State.SLIDING
-		# 1. Turn OFF the standing box, turn ON the crouching box
-		$StandingCollision.set_deferred(\"disabled\", true)
-		$CrouchedCollision.set_deferred(\"disabled\", false)
+		# Handle jump.
+		if Input.is_action_just_pressed(\"ui_accept\") and is_on_floor():
+			velocity.y = JumpVelocity
 		
-		await get_tree().create_timer(SlidingDuration).timeout
+		var targetX = targetLane * LaneWidth
+		position.x = lerp(position.x, targetX, LaneChangeSpeed * delta)
 		
-		currentState = State.RUNNING
-		 
-		# 2. Turn OFF the crouching box, turn ON the standing box
-		$CrouchedCollision.set_deferred(\"disabled\", true)
-		$StandingCollision.set_deferred(\"disabled\", false)
-	
-	move_and_slide()
+		if Input.is_action_just_pressed(\"ui_left\") and targetLane > Lane.LEFT:
+			targetLane -= 1 
+		if Input.is_action_just_pressed(\"ui_right\") and targetLane < Lane.RIGHT: 
+			targetLane += 1
+		if Input.is_action_just_pressed(\"ui_down\") and is_on_floor() and currentState != State.SLIDING:
+			currentState = State.SLIDING
+			# 1. Turn OFF the standing box, turn ON the crouching box
+			$StandingCollision.set_deferred(\"disabled\", true)
+			$CrouchedCollision.set_deferred(\"disabled\", false)
+			
+			await get_tree().create_timer(SlidingDuration).timeout
+			
+			currentState = State.RUNNING
+			 
+			# 2. Turn OFF the crouching box, turn ON the standing box
+			$CrouchedCollision.set_deferred(\"disabled\", true)
+			$StandingCollision.set_deferred(\"disabled\", false)
+		
+		move_and_slide()
 
 
 func _on_powerup_collider_area_entered(area: Area3D) -> void:
 	if area is Pickupable:
 		AddScore.emit(area.Score)
 	pass
+
+
+func _on_game_manager_game_over(score: int) -> void:
+	currentState = State.DEAD
+	pass
+
+
+func _on_game_manager_start_game() -> void:
+	position = Vector3(0,0,0)
+	currentState = State.RUNNING
+	pass # Replace with function body.
 "
 
 [sub_resource type="CapsuleShape3D" id="CapsuleShape3D_cm0pq"]
@@ -94,6 +107,8 @@ radius = 0.27075195
 height = 0.8
 
 [sub_resource type="CapsuleShape3D" id="CapsuleShape3D_trn2v"]
+
+[sub_resource type="WorldBoundaryShape3D" id="WorldBoundaryShape3D_lgr22"]
 
 [node name="GameManager" type="Node3D"]
 script = ExtResource("1_glv2v")
@@ -150,10 +165,8 @@ size = Vector3(10, 0.5, 200)
 [node name="ObstacleContainer" type="Node3D" parent="."]
 
 [node name="SpawnTimer" type="Timer" parent="."]
-autostart = true
 
 [node name="ScoreTimer" type="Timer" parent="."]
-autostart = true
 
 [node name="UI Manager" type="Control" parent="."]
 layout_mode = 3
@@ -174,8 +187,146 @@ offset_bottom = 136.0
 grow_horizontal = 0
 text = "Score:"
 
+[node name="LeaderBoard" type="Panel" parent="UI Manager"]
+layout_mode = 0
+offset_left = 705.0
+offset_top = 239.0
+offset_right = 941.0
+offset_bottom = 413.0
+
+[node name="VBoxContainer" type="VBoxContainer" parent="UI Manager/LeaderBoard"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="Label" type="Label" parent="UI Manager/LeaderBoard/VBoxContainer"]
+layout_mode = 2
+text = "LeaderBoard"
+horizontal_alignment = 1
+
+[node name="GameOverContainer" type="Control" parent="UI Manager"]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -116.5
+offset_top = -86.5
+offset_right = 116.5
+offset_bottom = 86.5
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="Panel" type="Panel" parent="UI Manager/GameOverContainer"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="VBoxContainer" type="VBoxContainer" parent="UI Manager/GameOverContainer"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="GameOverLabel" type="Label" parent="UI Manager/GameOverContainer/VBoxContainer"]
+layout_mode = 2
+text = "Game Over"
+horizontal_alignment = 1
+
+[node name="ScoreLabel" type="Label" parent="UI Manager/GameOverContainer/VBoxContainer"]
+layout_mode = 2
+text = "Score:"
+horizontal_alignment = 1
+
+[node name="Control" type="Control" parent="UI Manager/GameOverContainer/VBoxContainer"]
+custom_minimum_size = Vector2(0, 30)
+layout_mode = 2
+
+[node name="Button" type="Button" parent="UI Manager/GameOverContainer/VBoxContainer"]
+layout_mode = 2
+text = "Play Again"
+
+[node name="StartGameContainer" type="Control" parent="UI Manager"]
+visible = false
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -87.5
+offset_top = -68.5
+offset_right = 87.5
+offset_bottom = 68.5
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="Panel" type="Panel" parent="UI Manager/StartGameContainer"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="VBoxContainer" type="VBoxContainer" parent="UI Manager/StartGameContainer/Panel"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="Label" type="Label" parent="UI Manager/StartGameContainer/Panel/VBoxContainer"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 21
+text = "Infinite Runner"
+horizontal_alignment = 1
+
+[node name="Control" type="Control" parent="UI Manager/StartGameContainer/Panel/VBoxContainer"]
+custom_minimum_size = Vector2(0, 10)
+layout_mode = 2
+
+[node name="Label2" type="Label" parent="UI Manager/StartGameContainer/Panel/VBoxContainer"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 13
+text = "Right, Left, and Down
+Spacebar Keys to Play"
+horizontal_alignment = 1
+
+[node name="Control2" type="Control" parent="UI Manager/StartGameContainer/Panel/VBoxContainer"]
+custom_minimum_size = Vector2(0, 12.5)
+layout_mode = 2
+
+[node name="Button" type="Button" parent="UI Manager/StartGameContainer/Panel/VBoxContainer"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 18
+text = "Start Game"
+
+[node name="DeathPlane" type="Area3D" parent="."]
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="DeathPlane"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.36630535, 10.304183)
+shape = SubResource("WorldBoundaryShape3D_lgr22")
+
+[connection signal="GameOver" from="." to="Player" method="_on_game_manager_game_over"]
+[connection signal="GameOver" from="." to="UI Manager" method="_on_game_manager_game_over"]
 [connection signal="ScoreUpdated" from="." to="UI Manager" method="_on_game_manager_score_updated"]
+[connection signal="StartGame" from="." to="Player" method="_on_game_manager_start_game"]
 [connection signal="AddScore" from="Player" to="." method="_on_player_add_score"]
 [connection signal="area_entered" from="Player/PowerupCollider" to="Player" method="_on_powerup_collider_area_entered"]
 [connection signal="timeout" from="SpawnTimer" to="." method="_on_spawn_timer_timeout"]
 [connection signal="timeout" from="ScoreTimer" to="." method="_on_score_timer_timeout"]
+[connection signal="StartGame" from="UI Manager" to="." method="_on_ui_manager_start_game"]
+[connection signal="button_down" from="UI Manager/GameOverContainer/VBoxContainer/Button" to="UI Manager" method="_on_button_button_down"]
+[connection signal="button_down" from="UI Manager/StartGameContainer/Panel/VBoxContainer/Button" to="UI Manager" method="_on_button_button_down"]
+[connection signal="area_entered" from="DeathPlane" to="." method="_on_death_plane_area_entered"]

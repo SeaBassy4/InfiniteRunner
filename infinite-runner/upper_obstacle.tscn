@@ -17,7 +17,7 @@ script = ExtResource("1_pwaxl")
 CurrentObstacleType = 2
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.010894775, 1.6917782, 0)
+transform = Transform3D(1, 0, 0, 0, 1.1732912, 0, 0, 0, 1, -0.010894775, 1.6917782, 0)
 shape = SubResource("BoxShape3D_uu6xs")
 
 [node name="MeshInstance3D" type="MeshInstance3D" parent="."]
