@@ -1,0 +1,25 @@
+[gd_scene load_steps=5 format=3 uid="uid://c433oimlpgnr3"]
+
+[ext_resource type="Script" uid="uid://cwr6rdi0cytpe" path="res://Pickup.gd" id="1_d5gmh"]
+
+[sub_resource type="CapsuleMesh" id="CapsuleMesh_d5gmh"]
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_d5gmh"]
+albedo_color = Color(1, 1, 0.20784314, 1)
+
+[sub_resource type="CapsuleShape3D" id="CapsuleShape3D_0t63x"]
+
+[node name="Coin" type="Area3D"]
+script = ExtResource("1_d5gmh")
+Score = 10
+
+[node name="CSGMesh3D" type="CSGMesh3D" parent="."]
+transform = Transform3D(0.4, 0, 0, 0, 0.29078743, 0, 0, 0, 0.15364008, 0, 1.0357257, 0)
+mesh = SubResource("CapsuleMesh_d5gmh")
+material = SubResource("StandardMaterial3D_d5gmh")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="."]
+transform = Transform3D(0.4, 0, 0, 0, 0.29078743, 0, 0, 0, 0.15364008, 0, 1.0351678, 0)
+shape = SubResource("CapsuleShape3D_0t63x")
+
+[connection signal="area_entered" from="." to="." method="_on_area_entered"]

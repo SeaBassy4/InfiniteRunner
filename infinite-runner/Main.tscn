@@ -1,10 +1,11 @@
-[gd_scene load_steps=13 format=3 uid="uid://smu8wi0kyvps"]
+[gd_scene load_steps=15 format=3 uid="uid://smu8wi0kyvps"]
 
 [ext_resource type="Script" uid="uid://diov8cetkkx07" path="res://gamemanager.gd" id="1_glv2v"]
 [ext_resource type="PackedScene" uid="uid://but0vy8n63wmj" path="res://standard_obstacle.tscn" id="2_r0du0"]
 [ext_resource type="PackedScene" uid="uid://caw1qpc00yenm" path="res://lower_obstacle.tscn" id="2_uu6xs"]
 [ext_resource type="PackedScene" uid="uid://n1b4uuc47h6p" path="res://upper_obstacle.tscn" id="4_cm0pq"]
 [ext_resource type="PackedScene" uid="uid://br4apim4sj0i1" path="res://input_display.tscn" id="5_fos0i"]
+[ext_resource type="PackedScene" uid="uid://c433oimlpgnr3" path="res://coin.tscn" id="5_lgr22"]
 [ext_resource type="Script" uid="uid://d01tdd22huiee" path="res://ui_manager.gd" id="6_3dxm6"]
 
 [sub_resource type="ProceduralSkyMaterial" id="ProceduralSkyMaterial_rxg2q"]
@@ -23,6 +24,8 @@ glow_enabled = true
 
 [sub_resource type="GDScript" id="GDScript_rxg2q"]
 script/source = "extends CharacterBody3D
+
+signal AddScore(score : int)
 
 @export var Speed = 10.0
 @export var JumpVelocity = 4.5
@@ -74,6 +77,12 @@ func _physics_process(delta: float) -> void:
 		$StandingCollision.set_deferred(\"disabled\", false)
 	
 	move_and_slide()
+
+
+func _on_powerup_collider_area_entered(area: Area3D) -> void:
+	if area is Pickup:
+		AddScore.emit(area.Score)
+	pass
 "
 
 [sub_resource type="CapsuleShape3D" id="CapsuleShape3D_cm0pq"]
@@ -84,9 +93,12 @@ height = 1.8
 radius = 0.27075195
 height = 0.8
 
+[sub_resource type="CapsuleShape3D" id="CapsuleShape3D_trn2v"]
+
 [node name="GameManager" type="Node3D"]
 script = ExtResource("1_glv2v")
 ObstacleScene = Array[PackedScene]([ExtResource("2_r0du0"), ExtResource("2_uu6xs"), ExtResource("4_cm0pq")])
+PowerupsScene = Array[PackedScene]([ExtResource("5_lgr22")])
 SpawnDistance = -30.0
 
 [node name="InputDisplay" parent="." instance=ExtResource("5_fos0i")]
@@ -123,6 +135,12 @@ radius = 0.45
 [node name="Camera3D" type="Camera3D" parent="Player"]
 transform = Transform3D(1, 0, 0, 0, 0.82511353, 0.564967, 0, -0.564967, 0.82511353, 0, 4.6859446, 4.4427195)
 
+[node name="PowerupCollider" type="Area3D" parent="Player"]
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="Player/PowerupCollider"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.173478, 0)
+shape = SubResource("CapsuleShape3D_trn2v")
+
 [node name="Environment" type="Node3D" parent="."]
 
 [node name="CSGBox3D" type="CSGBox3D" parent="Environment"]
@@ -158,5 +176,7 @@ grow_horizontal = 0
 text = "Score:"
 
 [connection signal="ScoreUpdated" from="." to="UI Manager" method="_on_game_manager_score_updated"]
+[connection signal="AddScore" from="Player" to="." method="_on_player_add_score"]
+[connection signal="area_entered" from="Player/PowerupCollider" to="Player" method="_on_powerup_collider_area_entered"]
 [connection signal="timeout" from="SpawnTimer" to="." method="_on_spawn_timer_timeout"]
 [connection signal="timeout" from="ScoreTimer" to="." method="_on_score_timer_timeout"]
